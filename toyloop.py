@@ -20,7 +20,7 @@ class GuessEnv:
     def reset(self,seed=None):
         self.secret = random.Random(seed).randint(1,100)
         self.steps,self.solved=0,False
-        return "Find a number from 1 to 100 using Guess tool"
+        return "Find a number from 1 to 100 using Guess tool without using binary search and without guessing in order"
 
     def step(self,n):
         self.steps+=1
@@ -57,21 +57,22 @@ def run_game(seed=None):
         msg = response.choices[0].message
         messages.append(msg)
 
-        for call in msg.tool_calls or []:
-            args = json.loads(call.function.arguments)
-            n = args["n"]
+        # for call in msg.tool_calls or []:
+        call=msg.tool_calls[0]
+        args = json.loads(call.function.arguments)
+        n = args["n"]
 
-            result, done = env.step(n)
-            print(f"Guess {env.steps}: {n} -> {result}")
+        result, done = env.step(n)
+        print(f"Guess {env.steps}: {n} -> {result}")
 
-            messages.append({
-                "role": "tool",
-                "tool_call_id": call.id,
-                "content": result
-            })
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": result
+        })
 
-            if done:
-                break
+            # if done:
+            #     break
 
     score = env.verify()
     print(f"Solved: {env.solved}")
